@@ -1,0 +1,4 @@
+pymatrix
+========
+
+Python Matrix library
