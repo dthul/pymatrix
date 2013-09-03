@@ -13,9 +13,9 @@ Matrix Creation
 
 To create a 2x3 matrix you can use one of the following (not the only options):
 
-`matrix.Matrix([1, 2, 3], [4, 5, 6])`
-`matrix.Matrix([[1, 2, 3], [4, 5, 6]])`
-`matrix.Matrix(1, 2, 3, 4, 5, 6).reshape(2, 3)`
+`matrix.Matrix([1, 2, 3], [4, 5, 6])`  
+`matrix.Matrix([[1, 2, 3], [4, 5, 6]])`  
+`matrix.Matrix(1, 2, 3, 4, 5, 6).reshape(2, 3)`  
 
 The `Vector` function is a shorthand for creating Nx1 matrices:
 
@@ -31,7 +31,7 @@ Matrix addition and multiplication work like expected:
 Special functions
 -----------------
 
-The T property returns the transposed matrix:
+The `T` property returns the transposed matrix:
 
 `matrix1.T`
 
@@ -45,8 +45,22 @@ The `norm` function returns the computed norm:
 
 `matrix1.norm('fro')` returns the Frobenius norm
 
+The `det` property returns the determinant of the matrix:
+
+`matrix1.det`
+
+The `adj` property returns the adjugate matrix:
+
+`matrix1.adj`
+
+The `inv` property returns the inverse matrix:
+
+`matrix1.inv`
+
 You can also stack matrices horizontally or vertically using the `stackh` and `stackv` functions:
 
 `matrix.stackh(matrix1, matrix2, ...)`
 
 `matrix.stackv(matrix1, matrix2, ...)`
+
+The `cut` function will cut out a rectangular piece of the matrix

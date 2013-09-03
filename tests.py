@@ -27,6 +27,7 @@ class TestMatrixOperations(unittest.TestCase):
         self.assertFalse(self.v1 != Matrix([[1], [2], [3]]))
         self.assertFalse(self.m3 == self.m2)
         self.assertTrue(self.m1 != self.v2)
+        self.assertFalse(self.m1 == 14)
 
     def testAddition(self):
         tm1 = self.v1 + self.v2.T
@@ -137,6 +138,61 @@ class TestMatrixOperations(unittest.TestCase):
         self.assertRaises(Exception, tm1.reshape, height=5)
         self.assertRaises(Exception, tm1.reshape, width=0)
         self.assertRaises(Exception, tm1.reshape, 3, 3)
+
+    def testDiag(self):
+        # Get the diagonal of a Matrix
+        self.assertEqual(self.m1.diag, Vector(1, 1, 1))
+        self.assertEqual(self.m2.diag, Vector(4, 9))
+        self.assertEqual(self.m3.diag, Vector(8, -6, 5))
+        self.assertEqual(self.m3.diag, self.m3.T.diag)
+        # Make a Vector to a diagonal Matrix
+        self.assertEqual(diag(Vector(6)), Matrix(6))
+        self.assertEqual(diag(self.v2.T), Matrix([4, 0, 0], [0, 5, 0], [0, 0, 6]))
+        self.assertRaises(Exception, diag, self.v2)
+
+    def testIdentity(self):
+        self.assertEqual(identity(1), Vector(1))
+        self.assertEqual(identity(2), Matrix([1, 0], [0, 1]))
+        self.assertEqual(identity(3), Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
+        self.assertRaises(Exception, identity, 0)
+        self.assertRaises(Exception, identity, -1)
+
+    def testOnes(self):
+        self.assertEqual(ones(1, 1), Matrix(1))
+        self.assertEqual(ones(2, 2), Matrix([1, 1], [1, 1]))
+        self.assertEqual(ones(5, 1), Vector(1, 1, 1, 1, 1))
+        self.assertRaises(Exception, ones, 0, 2)
+        self.assertRaises(Exception, ones, 4, -1)
+
+    def testZeros(self):
+        self.assertEqual(zeros(1, 1), Matrix(0))
+        self.assertEqual(zeros(2, 2), Matrix([0, 0], [0, 0]))
+        self.assertEqual(zeros(5, 1), Vector(0, 0, 0, 0, 0))
+        self.assertRaises(Exception, zeros, 0, 2)
+        self.assertRaises(Exception, zeros, 4, -1)
+
+    def testCrossProduct(self):
+        tv1 = Vector(4, 5, 6)
+        self.assertEqual(self.v1 ^ tv1, Vector(-3, 6, -3))
+        self.assertEqual(Vector(54, -234, 4+9j) ^ Vector(-6, 32, 8),
+            Vector(-2000-288j, -456-54j, 324))
+        with self.assertRaises(Exception):
+            self.v1 ^ self.v2
+
+    def testTrace(self):
+        self.assertEqual(Matrix(5).trace, 5)
+        self.assertEqual(Matrix([-2, 2, -4], [-1, 1, 3], [2, 0, -1]).trace, -2)
+        with self.assertRaises(Exception):
+            self.m3.trace
+
+    def testInv(self):
+        with self.assertRaises(Exception):
+            Matrix((1, 2, 3), (5, 6, 7), (9, 10, 11)).inv
+        self.assertEqual(identity(5).inv, identity(5))
+        tm1 = Matrix([1, 3, 3], [1, 4, 3], [1, 3, 4])
+        self.assertEqual(tm1.inv, Matrix([7, -3, -3], [-1, 1, 0], [-1, 0, 1]))
+        tm2 = Matrix([1, 2, 3], [0, 1, 4], [5, 6, 0])
+        self.assertEqual(tm2.inv, Matrix([-24, 18, 5], [20, -15, -4], [-5, 4, 1]))
 
 if __name__ == '__main__':
     unittest.main()

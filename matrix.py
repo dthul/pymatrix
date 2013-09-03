@@ -107,7 +107,7 @@ class Matrix(object):
             if self.is_scalar:
                 return self.values[0][0] == other
             else:
-                raise Exception('Can\'t compare matrix and scalar')
+                return False
         assert isinstance(other, Matrix), 'Can only compare with matrices and scalars'
         return self.values == other.values
 
@@ -130,6 +130,17 @@ class Matrix(object):
     def __float__(self):
         assert self.is_scalar, 'Can only convert 1x1 matrices to a scalar'
         return float(self.values[0][0])
+
+    def __xor__(self, other):
+        """Computes the cross-product of two vectors"""
+        assert isinstance(other, Matrix), 'Can only take the cross product between two vectors'
+        assert self.height == 3 and self.width == 1 and other.height == 3 and other.width == 1,\
+            'Can only take the cross-product of two 3x1 Matrices'
+        u = self.get_col(0, raw=True)
+        v = other.get_col(0, raw=True)
+        return Vector(u[1] * v[2] - u[2] * v[1],
+            u[2] * v[0] - u[0] * v[2],
+            u[0] * v[1] - u[1] * v[0])
 
     @property
     def is_row_vector(self):
@@ -223,6 +234,114 @@ class Matrix(object):
             new_values.append(new_row)
         return Matrix(new_values)
 
+    @property
+    def diag(self):
+        """Returns the diagonal of a Matrix as a Vector"""
+        mindim = min(self.height, self.width)
+        return Vector([self.values[i][i] for i in range(0, mindim)])
+
+    @property
+    def trace(self):
+        assert self.is_square, 'Can only compute the trace of a square Matrix'
+        sum = 0
+        for i in range(0, self.height):
+            sum += self.values[i][i]
+        return sum
+
+    def cut(self, left = 0, right = None, top = 0, bottom = None):
+        """
+        Cuts a rectangular piece out of this Matrix.
+        From row top (inclusive) to row bottom (exclusive) and
+        from column left (inclusive) to column right (exclusive).
+        The resulting Matrix will have a height of bottom - top
+        and a width of right - left
+        """
+        if right is None:
+            right = self.width
+        if bottom is None:
+            bottom = self.height
+        assert left >= 0 and left < self.width, 'left out of bounds'
+        assert right > 0 and right <= self.width, 'right out of bounds'
+        assert top >= 0 and top < self.height, 'top out of bounds'
+        assert bottom > 0 and bottom <= self.height, 'bottom out of bounds'
+        assert left < right, 'left must be smaller than right'
+        assert top < bottom, 'top must be smaller than bottom'
+        width = right - left
+        height = bottom - top
+        flat_values = self._flat_values()
+        values = []
+        for row in range(0, height):
+            newrow = []
+            for col in range(0, width):
+                value = flat_values[self.width * top + left + self.width * row + col]
+                newrow.append(value)
+            values.append(newrow)
+        return Matrix(values)
+
+    def _A_ij(self, i, j):
+        """Returns the Matrix with row i and column j removed"""
+        assert i >= 0 and i < self.height, 'i out of bounds'
+        assert j >= 0 and j < self.width, 'j out of bounds'
+        if i == 0:
+            m1 = self.cut(top=1)
+        elif i == self.height - 1:
+            m1 = self.cut(bottom=self.height - 1)
+        else:
+            tm1 = self.cut(bottom=i)
+            tm2 = self.cut(top=i+1)
+            m1 = stackv(tm1, tm2)
+        if j == 0:
+            m2 = m1.cut(left=1)
+        elif j == m1.width - 1:
+            m2 = m1.cut(right=m1.width - 1)
+        else:
+            tm1 = m1.cut(right=j)
+            tm2 = m1.cut(left=j+1)
+            m2 = stackh(tm1, tm2)
+        return m2
+
+    @property
+    def det(self):
+        """Computes the determinant of the Matrix"""
+        assert self.is_square, 'Can only compute the determinant of a square Matrix'
+        if self.height == 1:
+            return self.values[0][0]
+        i = 0 # can be chosen arbitrarily (smaller than self.height)
+        sum = 0
+        for j in range(0, self.width):
+            if self.values[i][j] == 0:
+                continue
+            value = (-1)**(i+j) * self.values[i][j] * self._A_ij(i, j).det
+            sum += value
+        return sum
+
+    @property
+    def adj(self):
+        """Computes the adjugate of the Matrix"""
+        assert self.is_square, 'Can only compute the adjugate of a square Matrix'
+        values = []
+        for i in range(0, self.height):
+            new_row = []
+            for j in range(0, self.width):
+                value = (-1)**(i+j) * self._A_ij(j, i).det
+                new_row.append(value)
+            values.append(new_row)
+        return Matrix(values)
+
+    @property
+    def inv(self):
+        assert self.is_square, 'Can only compute the inverse of a square Matrix'
+        if self.height == 1:
+            return Matrix(1 / self.values[0][0])
+        d = self.det
+        if abs(d) < 10**-4:
+            raise Exception('Matrix is not invertible')
+        return 1 / d * self.adj
+
+    @property
+    def is_square(self):
+        return self.width == self.height
+
     def _flat_values(self):
         return [number for sublist in self.values for number in sublist]
 
@@ -284,6 +403,24 @@ def multvv(v1, v2):
     assert isseries(v1) and isseries(v2)
     assert len(v1) == len(v2)
     return sum(tuple(map(lambda x, y: x * y, v1, v2)))
+
+def identity(size):
+    m = Matrix([1 if i == j else 0 for i in range(0, size) for j in range(0, size)])
+    return m.reshape(size)
+
+def ones(height, width):
+    m = Matrix(height * width * [1])
+    return m.reshape(height, width)
+
+def zeros(height, width):
+    m = Matrix(height * width * [0])
+    return m.reshape(height, width)
+
+def diag(v):
+    """Creates a diagonal Matrix from a Vector"""
+    assert v.is_col_vector, 'Can only put column vector on the diagonal'
+    m = Matrix([v.values[i][0] if i == j else 0 for i in range(0, v.height) for j in range(0, v.height)])
+    return m.reshape(v.height)
 
 def isnumeric(value):
     return isinstance(value, int) or isinstance(value, float) or isinstance(value, complex)
