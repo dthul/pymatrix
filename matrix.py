@@ -113,6 +113,9 @@ class Matrix(object):
         else:
             return Vector(values)
 
+    def get(self, num_row, num_col):
+        return self._values[num_row][num_col]
+
     def __eq__(self, other):
         if isnumeric(other):
             if self.is_scalar:
@@ -152,6 +155,9 @@ class Matrix(object):
         return Vector(u[1] * v[2] - u[2] * v[1],
             u[2] * v[0] - u[0] * v[2],
             u[0] * v[1] - u[1] * v[0])
+
+    def __getitem__(self, index):
+        return self._flat_values()[index]
 
     @property
     def is_row_vector(self):
