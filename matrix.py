@@ -1,5 +1,11 @@
 import math
 
+import sys
+python_version = sys.version_info
+major_version = python_version[0]
+if major_version < 3:
+    raise Exception('Python>=3 required')
+
 class Matrix(object):
     def __init__(self, *values):
         assert len(values) > 0, 'The Matrix may not be empty'
@@ -49,6 +55,11 @@ class Matrix(object):
         assert isinstance(other, Matrix), 'Can only add Matrices'
         assert self.height == other.height and self.width == other.width, 'The Matrices to be added need to have the same size'
         return Matrix(tuple(map(lambda srow, orow: tuple(map(lambda x, y: x + y, srow, orow)), self.values, other.values)))
+
+    def __sub__(self, other):
+        assert isinstance(other, Matrix), 'Can only subtract Matrices'
+        assert self.height == other.height and self.width == other.width, 'The Matrices to be subtracted need to have the same size'
+        return Matrix(tuple(map(lambda srow, orow: tuple(map(lambda x, y: x - y, srow, orow)), self.values, other.values)))
 
     def __mul__(self, other):
         """Multiplication between a Matrix and a scalar or Matrix"""

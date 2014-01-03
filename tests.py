@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import unittest
 from matrix import *
 
@@ -36,6 +37,16 @@ class TestMatrixOperations(unittest.TestCase):
         self.assertEqual(tm2, Matrix([5, 3, -4, 6], [-6, 3, -1, -5]))
         with self.assertRaises(Exception):
             self.m2 + self.m3
+        with self.assertRaises(Exception):
+            self.v1 + self.v2
+
+    def testSubtraction(self):
+        tm1 = self.v1 - self.v2.T
+        self.assertEqual(tm1, Vector(-3, -3, -3))
+        tm2 = self.m3 - Matrix([1, 2, 3], [-4, 5, 6], [7, 8, -9], [10, -11, 12])
+        self.assertEqual(tm2, Matrix([7, -5, -2], [8, -11, -4], [0, -5, 14], [-12, 6, -11]))
+        with self.assertRaises(Exception):
+            self.m2 - self.m3
         with self.assertRaises(Exception):
             self.v1 - self.v2
 
