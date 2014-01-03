@@ -3,7 +3,8 @@ pymatrix
 
 pymatrix is a Python library that offers easily usable matrix arithmetics.
 Just do an `import matrix` to use it.
-Note: Matrix instances are immutable and all operations will return a new instance
+
+__Note:__ Matrix instances are immutable and all operations will return a new instance
 
 Usage
 =====
@@ -63,4 +64,6 @@ You can also stack matrices horizontally or vertically using the `stackh` and `s
 
 `matrix.stackv(matrix1, matrix2, ...)`
 
-The `cut` function will cut out a rectangular piece of the matrix
+The `cut` function cuts out a rectangular piece of a matrix:
+
+`matrix1.cut(left=1, right=3, top=2, bottom=4)` (excluding right and bottom)
