@@ -84,7 +84,7 @@ You can also stack matrices horizontally or vertically using the `stackh` and `s
 
 The `cut` function cuts out a rectangular piece of a matrix:
 
-`matrix1.cut(left=1, right=3, top=2, bottom=4)` (including left and right, excluding right and bottom)
+`matrix1.cut(left=1, right=3, top=2, bottom=4)` (including left and top, excluding right and bottom)
 
 The dimensions of a matrix can be changed by calling the `reshape` function:
 
